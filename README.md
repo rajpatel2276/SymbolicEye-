@@ -1,74 +1,38 @@
-# React + TypeScript + Vite
+# OBSERVER_v0.1 [BETA]
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A high-performance, real-time ASCII neural visualization engine. This project transforms a standard webcam feed into a stylized, interactive ASCII stream with specialized vision modes and motion-saliency detection.
 
-Currently, two official plugins are available:
+## 🛠 Technical Highlights
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **Temporal Throttling:** Logic-locked at 30 FPS to stabilize the main thread during heavy per-pixel traversal and text rendering.
+- **Ghost Echo (Saliency):** Implemented using a custom frame-delta algorithm. By comparing the current luminance buffer against the previous frame (`Uint8ClampedArray`), the engine isolates and highlights movement.
+- **Chroma Saturation Engine:** A custom vision mode that pushes $RGB$ saturation levels before mapping to ASCII characters for more vibrant visuals.
+- **Bit Density Control:** Real-time scaling of the ASCII grid resolution, balancing computational load with visual fidelity.
 
-## React Compiler
+## 🎨 UI/UX Features
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **Glassmorphism HUD:** A minimalist, translucent control pill built with Tailwind v4, designed to keep the focus on the neural stream.
+- **Vision Modes:** - `Raw`: Direct $RGB$ to ASCII mapping.
+  - `Phosphor`: Classic green-channel monochrome.
+  - `Nebula`: HSL-based psychedelic gradient.
+  - `Chroma`: Enhanced saturation mapping.
+- **Focus Mode:** Hides the HUD and scales the viewport for an immersive experience.
 
-## Expanding the ESLint configuration
+## 🚀 Built With
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- **React + TypeScript:** For strict type safety and component-driven architecture.
+- **Vite:** For ultra-fast HMR and optimized production bundling.
+- **Tailwind CSS v4:** For the modern, hardware-inspired Glassmorphism interface.
+- **React-Use-Measure:** For responsive canvas scaling.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## 📥 Local Setup
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+```bash
+# Clone the repository
+git clone [https://github.com/YOUR_USERNAME/ascii-observer.git](https://github.com/YOUR_USERNAME/ascii-observer.git)
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+# Install dependencies
+npm install
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
-# SymbolicEye-
+# Run the development server
+npm run dev
