@@ -28,7 +28,7 @@ export default function App() {
     echo: false
   });
 
-  // Camera Management Logic
+  // Camera Management
   useEffect(() => {
     let s: MediaStream | null = null;
     if (state.power) {
@@ -45,7 +45,7 @@ export default function App() {
     return () => { s?.getTracks().forEach(t => t.stop()); };
   }, [state.power]);
 
-  // Main Neural Rendering Loop (Stabilized at 30 FPS)
+  // Main Neural Rendering Loop (Stabilized 30 FPS)
   useEffect(() => {
     let id: number;
     const fpsLimit = 1000 / 30; 
@@ -96,7 +96,10 @@ export default function App() {
           const lum = (0.21 * r + 0.72 * g + 0.07 * b);
           curLum[rowOffset + x] = lum;
 
-          // Advanced Vision Logic
+          // CRITICAL FIX: Explicitly reset alpha per-pixel to allow toggle to work
+          dCtx.globalAlpha = 1.0;
+
+          // Vision Modes logic
           if (vision === 'raw') dCtx.fillStyle = `rgb(${r},${g},${b})`;
           else if (vision === 'chroma') {
             const boost = 1.6; 
@@ -107,7 +110,7 @@ export default function App() {
           
           let char = GLYPHS[Math.floor((lum/255) * glyphLen)];
 
-          // Ghost Echo (Motion Saliency)
+          // Ghost Echo (Motion Detection)
           if (echo && prev) {
             const delta = Math.abs(lum - prev[rowOffset + x]);
             if (delta > 35) {
@@ -119,7 +122,6 @@ export default function App() {
           }
 
           dCtx.fillText(char, x * (size * 0.6), y * size);
-          if (echo) dCtx.globalAlpha = 1.0;
         }
       }
       prevFrame.current = curLum;
@@ -141,7 +143,6 @@ export default function App() {
   return (
     <div className="relative h-screen w-full bg-[#030303] text-zinc-400 font-mono overflow-hidden">
       
-      {/* SCANLINE OVERLAY */}
       <div className="absolute inset-0 z-20 pointer-events-none opacity-[0.05] bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[length:100%_2px,2px_100%]" />
 
       <main ref={mRef} className="absolute inset-0 z-10 flex items-center justify-center p-4">
@@ -161,7 +162,6 @@ export default function App() {
       <div className={`absolute bottom-8 left-1/2 -translate-x-1/2 z-50 w-[95%] max-w-fit transition-all duration-700 ${state.focused ? 'bottom-[-150px] opacity-0' : 'opacity-100'}`}>
         <div className="flex flex-col gap-4 items-center">
             
-            {/* Resolution/Density Pill - Hidden on Mobile Portrait for space */}
             <div className="hidden sm:flex px-5 py-1.5 rounded-full bg-black/50 border border-white/5 backdrop-blur-xl items-center gap-4">
                 <span className="text-[7px] font-black text-zinc-600 uppercase tracking-widest">Pixel_Grid</span>
                 <input 
@@ -172,7 +172,6 @@ export default function App() {
                 <span className="text-[8px] font-bold text-zinc-400">{state.density}</span>
             </div>
 
-            {/* Main Control Pill - Flex Shrink Optimized */}
             <div className="flex items-center gap-4 sm:gap-8 px-6 sm:px-10 py-3 sm:py-4 rounded-3xl bg-[#08080a]/95 border border-white/5 backdrop-blur-3xl shadow-2xl">
               
               <div className="flex items-center gap-4 sm:gap-6 pr-4 sm:pr-8 border-r border-white/5 flex-shrink-0">
@@ -188,12 +187,11 @@ export default function App() {
                 </button>
               </div>
 
-              {/* Scrollable Vision Modes for small screens */}
               <div className="flex gap-2 overflow-x-auto no-scrollbar max-w-[100px] sm:max-w-none">
                 {(['raw', 'chroma', 'phosphor', 'glitch', 'nebula'] as const).map(v => (
                   <button 
                     key={v} onClick={() => setState({...state, vision: v})}
-                    className={`text-[8px] font-black uppercase tracking-tighter transition-all px-2 py-1 rounded flex-shrink-0 ${state.vision === v ? 'text-white bg-white/5' : 'text-zinc-600 hover:text-zinc-400'}`}
+                    className={`text-[8px] font-black uppercase tracking-tighter transition-all px-2 py-1 rounded flex-shrink-0 ${state.vision === v ? 'text-white bg-white/5' : 'text-zinc-600'}`}
                   >
                     {v}
                   </button>
@@ -205,6 +203,7 @@ export default function App() {
                   onClick={() => setState({...state, echo: !state.echo})}
                   className={`flex items-center gap-2 text-[8px] font-black transition-all ${state.echo ? 'text-cyan-400' : 'text-zinc-600'}`}
                 >
+                  GHOST_ECHO
                   <div className={`w-2 h-0.5 rounded-full transition-all duration-300 ${state.echo ? 'bg-cyan-400 shadow-[0_0_8px_cyan]' : 'bg-zinc-800'}`} />
                 </button>
                 
