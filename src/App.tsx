@@ -17,17 +17,18 @@ export default function App() {
   const pRef = useRef<HTMLCanvasElement>(null);
   const dRef = useRef<HTMLCanvasElement>(null);
   const prevFrame = useRef<Uint8ClampedArray | null>(null);
-  const lastFrameTime = useRef<number>(0); // FPS Tracker
+  const lastFrameTime = useRef<number>(0); 
   const [mRef, bounds] = useMeasure();
   
   const [state, setState] = useState<ProjectState>({
-    density: 120, // Default to stable density
+    density: 120, 
     vision: 'chroma',
     focused: false,
     power: false,
     echo: false
   });
 
+  // Camera Management Logic
   useEffect(() => {
     let s: MediaStream | null = null;
     if (state.power) {
@@ -44,14 +45,14 @@ export default function App() {
     return () => { s?.getTracks().forEach(t => t.stop()); };
   }, [state.power]);
 
+  // Main Neural Rendering Loop (Stabilized at 30 FPS)
   useEffect(() => {
     let id: number;
-    const fpsLimit = 1000 / 30; // Target 30 FPS for stability
+    const fpsLimit = 1000 / 30; 
 
     const process = (timestamp: number) => {
       id = requestAnimationFrame(process);
 
-      // --- STABILITY GATE ---
       const elapsed = timestamp - lastFrameTime.current;
       if (elapsed < fpsLimit) return;
       lastFrameTime.current = timestamp;
@@ -65,7 +66,6 @@ export default function App() {
       const dCtx = d.getContext('2d');
       if (!pCtx || !dCtx) return;
 
-      // Logic: Cache state values locally to avoid object lookup in loops
       const { density, vision, echo } = state;
       const w = density;
       const h = Math.floor(v.videoHeight / (v.videoWidth / w) * 0.5);
@@ -96,7 +96,7 @@ export default function App() {
           const lum = (0.21 * r + 0.72 * g + 0.07 * b);
           curLum[rowOffset + x] = lum;
 
-          // VISION LOGIC
+          // Advanced Vision Logic
           if (vision === 'raw') dCtx.fillStyle = `rgb(${r},${g},${b})`;
           else if (vision === 'chroma') {
             const boost = 1.6; 
@@ -107,7 +107,7 @@ export default function App() {
           
           let char = GLYPHS[Math.floor((lum/255) * glyphLen)];
 
-          // MOTION ECHO
+          // Ghost Echo (Motion Saliency)
           if (echo && prev) {
             const delta = Math.abs(lum - prev[rowOffset + x]);
             if (delta > 35) {
@@ -157,12 +157,12 @@ export default function App() {
         <video ref={vRef} autoPlay playsInline className="hidden" />
       </main>
 
-      {/* MINIMALIST FLOATING HUD */}
-      <div className={`absolute bottom-8 left-1/2 -translate-x-1/2 z-50 transition-all duration-700 ${state.focused ? 'bottom-[-150px] opacity-0' : 'opacity-100'}`}>
+      {/* MOBILE-STABILIZED HUD */}
+      <div className={`absolute bottom-8 left-1/2 -translate-x-1/2 z-50 w-[95%] max-w-fit transition-all duration-700 ${state.focused ? 'bottom-[-150px] opacity-0' : 'opacity-100'}`}>
         <div className="flex flex-col gap-4 items-center">
             
-            {/* Resolution/Density Pill */}
-            <div className="px-5 py-1.5 rounded-full bg-black/50 border border-white/5 backdrop-blur-xl flex items-center gap-4">
+            {/* Resolution/Density Pill - Hidden on Mobile Portrait for space */}
+            <div className="hidden sm:flex px-5 py-1.5 rounded-full bg-black/50 border border-white/5 backdrop-blur-xl items-center gap-4">
                 <span className="text-[7px] font-black text-zinc-600 uppercase tracking-widest">Pixel_Grid</span>
                 <input 
                   type="range" min="80" max="150" value={state.density} 
@@ -172,43 +172,43 @@ export default function App() {
                 <span className="text-[8px] font-bold text-zinc-400">{state.density}</span>
             </div>
 
-            {/* Main Control Pill */}
-            <div className="flex items-center gap-8 px-10 py-4 rounded-3xl bg-[#08080a]/95 border border-white/5 backdrop-blur-3xl shadow-2xl">
+            {/* Main Control Pill - Flex Shrink Optimized */}
+            <div className="flex items-center gap-4 sm:gap-8 px-6 sm:px-10 py-3 sm:py-4 rounded-3xl bg-[#08080a]/95 border border-white/5 backdrop-blur-3xl shadow-2xl">
               
-              <div className="flex items-center gap-6 pr-8 border-r border-white/5">
+              <div className="flex items-center gap-4 sm:gap-6 pr-4 sm:pr-8 border-r border-white/5 flex-shrink-0">
                 <div className="flex flex-col">
                     <span className="text-[10px] font-black text-white italic tracking-tighter">OBSERVER</span>
-                    <span className="text-[6px] text-indigo-500 font-bold tracking-[0.4em]">STABLE_BUILD</span>
+                    <span className="text-[6px] text-indigo-500 font-bold tracking-[0.4em]">STABLE</span>
                 </div>
                 <button 
                   onClick={() => setState({...state, power: !state.power})}
-                  className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-500 ${state.power ? 'bg-red-500/10' : 'bg-white'}`}
+                  className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center transition-all duration-500 flex-shrink-0 ${state.power ? 'bg-red-500/10' : 'bg-white'}`}
                 >
                   <div className={`w-1.5 h-1.5 rounded-full ${state.power ? 'bg-red-500 animate-pulse' : 'bg-black'}`} />
                 </button>
               </div>
 
-              <div className="flex gap-4">
+              {/* Scrollable Vision Modes for small screens */}
+              <div className="flex gap-2 overflow-x-auto no-scrollbar max-w-[100px] sm:max-w-none">
                 {(['raw', 'chroma', 'phosphor', 'glitch', 'nebula'] as const).map(v => (
                   <button 
                     key={v} onClick={() => setState({...state, vision: v})}
-                    className={`text-[8px] font-black uppercase tracking-tighter transition-all px-2 py-1 rounded ${state.vision === v ? 'text-white bg-white/5 shadow-sm' : 'text-zinc-600 hover:text-zinc-400'}`}
+                    className={`text-[8px] font-black uppercase tracking-tighter transition-all px-2 py-1 rounded flex-shrink-0 ${state.vision === v ? 'text-white bg-white/5' : 'text-zinc-600 hover:text-zinc-400'}`}
                   >
                     {v}
                   </button>
                 ))}
               </div>
 
-              <div className="flex items-center gap-6 pl-8 border-l border-white/5">
+              <div className="flex items-center gap-4 sm:gap-6 pl-4 sm:pl-8 border-l border-white/5 flex-shrink-0">
                 <button 
                   onClick={() => setState({...state, echo: !state.echo})}
-                  className={`flex items-center gap-3 text-[8px] font-black transition-all ${state.echo ? 'text-cyan-400' : 'text-zinc-600'}`}
+                  className={`flex items-center gap-2 text-[8px] font-black transition-all ${state.echo ? 'text-cyan-400' : 'text-zinc-600'}`}
                 >
-                  GHOST_ECHO
                   <div className={`w-2 h-0.5 rounded-full transition-all duration-300 ${state.echo ? 'bg-cyan-400 shadow-[0_0_8px_cyan]' : 'bg-zinc-800'}`} />
                 </button>
                 
-                <div className="flex items-center gap-4 border-l border-white/5 pl-8">
+                <div className="flex items-center gap-3 sm:gap-4 border-l border-white/5 pl-4 sm:pl-8">
                     <button onClick={save} className="text-zinc-600 hover:text-white transition-colors">
                         <svg width="14" height="14" fill="currentColor" viewBox="0 0 256 256"><path d="M208,56H181.33L165.33,34.67A8,8,0,0,0,159,32H97a8,8,0,0,0-6.33,2.67L74.67,56H48A16,16,0,0,0,32,72V200a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V72A16,16,0,0,0,208,56Zm-80,128a36,36,0,1,1,36-36A36,36,0,0,1,128,184Z"></path></svg>
                     </button>
