@@ -1,0 +1,13 @@
+@import "tailwindcss"; /* This one line replaces the three old @tailwind lines */
+
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@700&display=swap');
+
+:root {
+  background-color: #050505;
+  color: #fafafa;
+}
+
+body {
+  margin: 0;
+  font-family: 'JetBrains Mono', monospace;
+}
