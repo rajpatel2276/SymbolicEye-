@@ -147,7 +147,7 @@ export default function App() {
       <main ref={mRef} className="absolute inset-0 z-10 flex items-center justify-center p-4">
         {!state.power ? (
           <div className="text-center group cursor-pointer" onClick={() => setState({...state, power: true})}>
-            <div className="text-[10px] tracking-[1.5em] text-zinc-800 group-hover:text-indigo-500 transition-all duration-700">BOOT_OBSERVER_v0.1</div>
+            <div className="text-[10px] tracking-[1.5em] text-zinc-800 group-hover:text-indigo-500 transition-all duration-700">SymbolicEye</div>
             <div className="mt-4 w-6 h-px bg-zinc-900 mx-auto group-hover:w-32 group-hover:bg-indigo-500 transition-all duration-1000"></div>
           </div>
         ) : (
